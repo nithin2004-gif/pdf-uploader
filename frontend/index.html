@@ -1,0 +1,62 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>PDF Uploader</title>
+  <style>
+    body { font-family: sans-serif; max-width: 600px; margin: auto; padding: 2rem; }
+    h2 { text-align: center; }
+    .file-list a { display: block; margin-top: 8px; color: blue; text-decoration: none; }
+  </style>
+</head>
+<body>
+  <h2>📄 PDF Uploader</h2>
+
+  <input type="file" id="pdfInput" accept="application/pdf"/>
+  <button onclick="uploadPDF()">Upload</button>
+
+  <h3>Uploaded PDFs:</h3>
+  <div class="file-list" id="fileList"></div>
+
+  <script>
+    async function uploadPDF() {
+      const input = document.getElementById('pdfInput');
+      if (!input.files.length) return alert('Select a PDF to upload!');
+      
+      const formData = new FormData();
+      formData.append('pdf', input.files[0]);
+
+      const res = await fetch('http://localhost:5000/upload', {
+        method: 'POST',
+        body: formData
+      });
+
+      if (res.ok) {
+        alert('Uploaded!');
+        input.value = '';
+        loadFiles();
+      } else {
+        alert('Upload failed.');
+      }
+    }
+
+    async function loadFiles() {
+      const res = await fetch('http://localhost:5000/list');
+      const files = await res.json();
+
+      const fileList = document.getElementById('fileList');
+      fileList.innerHTML = '';
+      files.forEach(file => {
+        const a = document.createElement('a');
+        a.href = file.url;
+        a.textContent = file.name;
+        a.target = '_blank';
+        fileList.appendChild(a);
+      });
+    }
+
+    loadFiles(); // load when page loads
+  </script>
+</body>
+</html>
